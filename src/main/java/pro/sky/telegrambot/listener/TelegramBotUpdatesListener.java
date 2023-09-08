@@ -55,7 +55,6 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         SendMessage sendMessage = new SendMessage(chatId, textToSend);
         // sending message
         SendResponse response = telegramBot.execute(sendMessage);
-
         if (!response.isOk()) {
             logger.error("Error occured during sending message to bot. Error: " + response.description());
         }
