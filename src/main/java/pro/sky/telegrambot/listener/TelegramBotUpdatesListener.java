@@ -5,13 +5,21 @@ import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.SendResponse;
+import liquibase.pro.packaged.S;
+import liquibase.pro.packaged.W;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pro.sky.telegrambot.model.NotificationTask;
+import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {
@@ -21,6 +29,9 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     @Autowired
     private TelegramBot telegramBot;
 
+    @Autowired
+    private NotificationTaskRepository repository;
+
     @PostConstruct
     public void init() {
         telegramBot.setUpdatesListener(this);
@@ -28,9 +39,9 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     @Override
     public int process(List<Update> updates) {
-        // info about updates
+//         info about updates
         logger.info("Processing update: {}", updates);
-        // starting bot
+//         starting bot
         for (Update update : updates) {
             String massageText = update.message().text();
             long chatId = update.message().chat().id();
@@ -58,6 +69,18 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         if (!response.isOk()) {
             logger.error("Error occured during sending message to bot. Error: " + response.description());
         }
+    }
+
+    public void sendReminder (String text) {
+        // create pattern
+        Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
+        LocalDateTime localDateTime = LocalDateTime.parse(text, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.matches()) {
+            String date = matcher.group(1);
+            String item = matcher.group(3);
+        }
+        repository.save(localDateTime);
     }
 
 }

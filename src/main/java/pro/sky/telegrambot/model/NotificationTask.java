@@ -1,5 +1,9 @@
 package pro.sky.telegrambot.model;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,6 +12,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class NotificationTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,45 +29,12 @@ public class NotificationTask {
         this.textMessage = textMessage;
         this.timeReminder = timeReminder;
     }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public long getChatId() {
-        return chatId;
-    }
-
-    public void setChatId(long chatId) {
-        this.chatId = chatId;
-    }
-
-    public String getTextMessage() {
-        return textMessage;
-    }
-
-    public void setTextMessage(String textMessage) {
-        this.textMessage = textMessage;
-    }
-
-    public LocalDateTime getTimeReminder() {
-        return timeReminder;
-    }
-
-    public void setTimeReminder(LocalDateTime timeReminder) {
-        this.timeReminder = timeReminder;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        NotificationTask model = (NotificationTask) o;
-        return id == model.id && chatId == model.chatId && Objects.equals(textMessage, model.textMessage) && Objects.equals(timeReminder, model.timeReminder);
+        NotificationTask that = (NotificationTask) o;
+        return id == that.id && chatId == that.chatId && Objects.equals(textMessage, that.textMessage) && Objects.equals(timeReminder, that.timeReminder);
     }
 
     @Override
