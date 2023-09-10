@@ -5,8 +5,6 @@ import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.SendResponse;
-import liquibase.pro.packaged.S;
-import liquibase.pro.packaged.W;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,24 +29,35 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     @Autowired
     private NotificationTaskRepository repository;
+    private DateTimeFormatter DATE_TIME_FORMAT;
 
     @PostConstruct
     public void init() {
         telegramBot.setUpdatesListener(this);
     }
 
+    // create pattern
+    private final static Pattern MESSAGE_PATTERN = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
+
     @Override
     public int process(List<Update> updates) {
-//         info about updates
+        //         info about updates
         logger.info("Processing update: {}", updates);
-//         starting bot
+        //         starting bot
         for (Update update : updates) {
-            String massageText = update.message().text();
+            String messageText = update.message().text();
             long chatId = update.message().chat().id();
-            if (massageText.equals("/start")) {
-                startCommandReceived(chatId, update.message().chat().firstName());
-            } else {
-                sendMessage(chatId, "Sorry, command was not recognized");
+            switch (messageText) {
+                case "/start":
+                    // welcome message
+                    startCommandReceived(chatId, update.message().chat().firstName());
+                    logger.info("Welcome message was sanded");
+                    break;
+                default:
+                    // reminder message
+                    sendReminder(chatId, messageText);
+                    logger.info("Reminder was saved");
+                    break;
             }
         }
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
@@ -56,7 +65,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     private void startCommandReceived(long chatId, String name) {
         // welcome message
-        String answer = "Hi, " + name + ", let's start!";
+        String answer = "Hi, " + name + ", write a reminder in the format: dd.mm.yyyy HH:MM text";
         sendMessage(chatId, answer);
     }
 
@@ -71,16 +80,23 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         }
     }
 
-    public void sendReminder (String text) {
-        // create pattern
-        Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
-        LocalDateTime localDateTime = LocalDateTime.parse(text, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
-        Matcher matcher = pattern.matcher(text);
+    public void sendReminder(long chatId, String text) {
+        // make finder
+        Matcher matcher = MESSAGE_PATTERN.matcher(text);
         if (matcher.matches()) {
-            String date = matcher.group(1);
-            String item = matcher.group(3);
+            String task = matcher.group(3);
+            // make format
+            LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+            // save task in DB
+            repository.save(new NotificationTask(
+                    task, chatId, localDateTime
+            ));
+            // successful
+            sendMessage(chatId, "Reminder was saved!");
+        } else {
+            // error
+            sendMessage(chatId, "Wrong format, try dd.mm.yyyy HH:MM text");
         }
-        repository.save(localDateTime);
     }
 
 }

@@ -29,6 +29,10 @@ public class NotificationTask {
         this.textMessage = textMessage;
         this.timeReminder = timeReminder;
     }
+
+    public NotificationTask(String task, long chatId, LocalDateTime localDateTime) {
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -15,5 +15,4 @@ import java.util.Optional;
 import java.util.function.Function;
 @Repository
 public interface NotificationTaskRepository extends JpaRepository<NotificationTask, Long> {
-    NotificationTask save(LocalDateTime text);
 }
