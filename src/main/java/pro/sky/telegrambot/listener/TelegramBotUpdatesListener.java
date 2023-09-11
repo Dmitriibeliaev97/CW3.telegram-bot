@@ -31,15 +31,14 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     @Autowired
     private NotificationTaskRepository repository;
-    private DateTimeFormatter DATE_TIME_FORMAT;
+    private final static DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private final static Pattern MESSAGE_PATTERN = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
 
     @PostConstruct
     public void init() {
         telegramBot.setUpdatesListener(this);
     }
-
     // create pattern
-    private final static Pattern MESSAGE_PATTERN = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
 
     @Override
     public int process(List<Update> updates) {
@@ -88,11 +87,9 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         if (matcher.matches()) {
             String task = matcher.group(3);
             // make format
-            LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+            LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DATE_TIME_FORMAT);
             // save task in DB
-            repository.save(new NotificationTask(
-                    task, chatId, localDateTime
-            ));
+            repository.save(new NotificationTask(task, chatId, localDateTime));
             // successful
             sendMessage(chatId, "Reminder was saved!");
         } else {
@@ -101,15 +98,13 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         }
     }
 
-    public NotificationTask findTask() {
-        // find task by time reminder
-        NotificationTask task = repository.findByTimeReminder(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
-        logger.info("Task was started");
-        return task;
-    }
-
     @Scheduled(cron = "0 0/1 * * * *")
-    public void run() {
-        findTask();
+    public void findTask() {
+        // find task by time reminder
+        List<NotificationTask> tasks = repository.findAllByTimeReminder(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+        logger.info("Method was started");
+        for (NotificationTask task : tasks) {
+            sendReminder(task.getChatId(), task.getTextMessage());
+        }
     }
 }

@@ -1,8 +1,6 @@
 package pro.sky.telegrambot.model;
 
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,8 +10,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Getter
-@Setter
 @NoArgsConstructor
 public class NotificationTask {
     @Id
@@ -22,13 +18,6 @@ public class NotificationTask {
     private long chatId;
     private String textMessage;
     private LocalDateTime timeReminder;
-
-    public NotificationTask(long id, long chatId, String textMessage, LocalDateTime timeReminder) {
-        this.id = id;
-        this.chatId = chatId;
-        this.textMessage = textMessage;
-        this.timeReminder = timeReminder;
-    }
 
     public NotificationTask(String task, long chatId, LocalDateTime localDateTime) {
     }
@@ -46,6 +35,38 @@ public class NotificationTask {
         return Objects.hash(id, chatId, textMessage, timeReminder);
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(long chatId) {
+        this.chatId = chatId;
+    }
+
+    public String getTextMessage() {
+        return textMessage;
+    }
+
+    public void setTextMessage(String textMessage) {
+        this.textMessage = textMessage;
+    }
+
+    public LocalDateTime getTimeReminder() {
+        return timeReminder;
+    }
+
+    public void setTimeReminder(LocalDateTime timeReminder) {
+        this.timeReminder = timeReminder;
+    }
+
     @Override
     public String toString() {
         return "Model{" +
@@ -54,6 +75,7 @@ public class NotificationTask {
                 ", textMessage='" + textMessage + '\'' +
                 ", timeReminder=" + timeReminder +
                 '}';
+
     }
 }
 

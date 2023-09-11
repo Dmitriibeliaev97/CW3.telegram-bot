@@ -6,9 +6,9 @@ import org.springframework.stereotype.Repository;
 import pro.sky.telegrambot.model.NotificationTask;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface NotificationTaskRepository extends JpaRepository<NotificationTask, Long> {
-    @Query(value = "SELECT time_reminder FROM notification_task", nativeQuery = true )
-    NotificationTask findByTimeReminder(LocalDateTime timeReminder);
+    List<NotificationTask> findAllByTimeReminder(LocalDateTime timeReminder);
 }
