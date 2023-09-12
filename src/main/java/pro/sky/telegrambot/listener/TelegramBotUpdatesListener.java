@@ -31,6 +31,8 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     @Autowired
     private NotificationTaskRepository repository;
+
+    // create pattern
     private final static DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final static Pattern MESSAGE_PATTERN = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
 
@@ -38,7 +40,6 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     public void init() {
         telegramBot.setUpdatesListener(this);
     }
-    // create pattern
 
     @Override
     public int process(List<Update> updates) {
