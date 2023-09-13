@@ -90,7 +90,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             // make format
             LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DATE_TIME_FORMAT);
             // save task in DB
-            repository.save(new NotificationTask(task, chatId, localDateTime));
+            repository.save(new NotificationTask(chatId, task, localDateTime));
             // successful
             sendMessage(chatId, "Reminder was saved!");
         } else {
@@ -105,7 +105,9 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         List<NotificationTask> tasks = repository.findAllByTimeReminder(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
         logger.info("Method was started");
         for (NotificationTask task : tasks) {
-            sendReminder(task.getChatId(), task.getTextMessage());
+            // sending task
+            sendMessage(task.getChatId(), task.getTextMessage());
+            logger.info("Task was sending");
         }
     }
 }

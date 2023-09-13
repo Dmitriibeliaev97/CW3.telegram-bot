@@ -19,7 +19,10 @@ public class NotificationTask {
     private String textMessage;
     private LocalDateTime timeReminder;
 
-    public NotificationTask(String task, long chatId, LocalDateTime localDateTime) {
+    public NotificationTask(long chatId, String textMessage, LocalDateTime timeReminder) {
+        this.chatId = chatId;
+        this.textMessage = textMessage;
+        this.timeReminder = timeReminder;
     }
 
     @Override
