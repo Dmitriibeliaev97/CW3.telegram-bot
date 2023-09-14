@@ -16,6 +16,7 @@ import pro.sky.telegrambot.repository.NotificationTaskRepository;
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -49,17 +50,23 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         for (Update update : updates) {
             String messageText = update.message().text();
             long chatId = update.message().chat().id();
-            switch (messageText) {
-                case "/start":
-                    // welcome message
-                    startCommandReceived(chatId, update.message().chat().firstName());
-                    logger.info("Welcome message was sent");
-                    break;
-                default:
-                    // reminder message
-                    sendReminder(chatId, messageText);
-                    logger.info("Reminder was saved");
-                    break;
+            try {
+                switch (messageText) {
+                    case "/start":
+                        // welcome message
+                        startCommandReceived(chatId, update.message().chat().firstName());
+                        logger.info("Welcome message was sent");
+                        break;
+                    default:
+                        // reminder message
+                        sendReminder(chatId, messageText);
+                        logger.info("Reminder was saved");
+                        break;
+                }
+                // catch error message
+            } catch (NullPointerException e) {
+                sendMessage(chatId, "Message format error");
+                logger.info("Message format error");
             }
         }
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
@@ -85,17 +92,23 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     public void sendReminder(long chatId, String text) {
         // make finder
         Matcher matcher = MESSAGE_PATTERN.matcher(text);
-        if (matcher.matches()) {
-            String task = matcher.group(3);
-            // make format
-            LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DATE_TIME_FORMAT);
-            // save task in DB
-            repository.save(new NotificationTask(chatId, task, localDateTime));
-            // successful
-            sendMessage(chatId, "Reminder was saved!");
-        } else {
-            // error
-            sendMessage(chatId, "Wrong format, try dd.mm.yyyy HH:MM text");
+        try {
+            if (matcher.matches()) {
+                String task = matcher.group(3);
+                // make format
+                LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DATE_TIME_FORMAT);
+                // save task in DB
+                repository.save(new NotificationTask(chatId, task, localDateTime));
+                // successful
+                sendMessage(chatId, "Reminder was saved!");
+            } else {
+                // error
+                sendMessage(chatId, "Wrong format, try dd.mm.yyyy HH:MM text");
+            }
+            // catch error date
+        } catch (DateTimeParseException e) {
+            sendMessage(chatId, "Error date, try again");
+            logger.info("Error date");
         }
     }
 
